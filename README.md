@@ -4,6 +4,7 @@ HKU COMP1110 project groupF01
 Menu & CLI
 This section of code is designed to improve readability and create a user-friendly interface.
 We realize basic functions including user verification, error prompt, Multi-level menu and .
+<br>
 To use this programme, please ensure "click" and "rich" are installed.
 
 Command line style
