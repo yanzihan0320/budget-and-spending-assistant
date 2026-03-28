@@ -5,6 +5,7 @@
 import json
 import os
 import click
+import time
 from rich import print
 from rich.panel import Panel
 from rich.console import Console
@@ -25,7 +26,7 @@ from rich.console import Console
 # 這裏是我想要的user部分的io函數大致樣子（文件數據的界面目前還沒）
 # PATH refers to the file where store user data
 
-PATH = "buzhidaoqushenmemingzihao.json"
+PATH = "user.json"
 def user_load():
     try:
         with open(PATH, 'r') as f:
@@ -98,6 +99,13 @@ def show_username_rule():
         border_style="blue"
     )
     console.print(panel)
+def main_menu(username: str):
+    """具體功能界面"""
+    time.sleep(3)
+    while True:
+        console.clear()
+
+
 
 # ==================== Click 命令組 ====================
 
@@ -123,6 +131,7 @@ def login(username, password):
         show_welcome_panel(username)
         # opening interface
         # 這裏之後會加上跳轉到下一級界面的代碼
+        main_menu()
     else:
         click.secho(f"❌ Wrong Password! Try again! ", fg="red")
     
