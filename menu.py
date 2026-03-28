@@ -1,6 +1,4 @@
 # 請確保已安裝click，rich
-# 輸入python menu.py [command] 以執行操作
-# 我過段時間把這個文件拆分一下多個文件
 
 import json
 import os
@@ -9,6 +7,8 @@ import time
 from rich import print
 from rich.panel import Panel
 from rich.console import Console
+from rich.table import Table
+from rich.prompt import Prompt, Confirm
 # from role3dewenjian import load,save...
 ''' 
 用戶數據儲存結構
@@ -80,6 +80,7 @@ def user_create(username: str, password: str):
 
 # 下面是用戶界面核心相關部分
 console = Console()
+
 def show_welcome_panel(username: str):
     """顯示歡迎面板"""
     panel = Panel.fit(
@@ -99,73 +100,234 @@ def show_username_rule():
         border_style="blue"
     )
     console.print(panel)
-def main_menu(username: str):
-    """具體功能界面"""
-    time.sleep(3)
+
+
+def add_budget_plan_menu():
+    
+    time.sleep(1)
     while True:
         console.clear()
 
+        menu_table = Table(show_header=False, box=None)
+        menu_table.add_column("Option", style="bold yellow", width=8)
+        menu_table.add_column("Description", style="white")
+
+        menu_table.add_row("1", "View Budget Overview")
+        menu_table.add_row("2", "Add Expense")
+        menu_table.add_row("3", "View Expenses")
+        menu_table.add_row("4", "Set Budget Goal")
+        menu_table.add_row("5", "Statistics & Reports")
+        menu_table.add_row("6", "Help")
+        menu_table.add_row("7", "Back to main menu")
+        menu_table.add_row("8", "Quit")
+
+        print(menu_table)
 
 
-# ==================== Click 命令組 ====================
 
-@click.group()
-def cli():
-    """Personal Budget Assisstant"""
-    pass
 
-# log in 
-@cli.command()
-@click.option("--username", "-n", prompt = True, help = "用戶名稱")
-@click.option("--password", "-p", prompt = True, hide_input = True, help = "密碼")
-def login(username, password):
-    """登錄"""
-    users = user_load()
-    user = user_find(users, username)
-    if user == None:
-        click.secho(f"❌ 用戶 '{username}' 不存在", fg="red")
-        return
+class BudgetAssistant:
+    # region 構造方法（含字段無屬性）
+    def __init__(self):
+        self.console = Console()
+        self.current_user = None
+        self.running = True
+    # endregion
+    
+    # region 各級界面
+    def start(self):
+        """開始界面"""
+        # 開始界面
+        while self.running:
+            self.console.clear()
+            menu_table = Table(show_header=False, box = None)
+            menu_table.add_column(justify="center")
 
-    result = user_examine(user, password)
-    if result:
-        show_welcome_panel(username)
-        # opening interface
-        # 這裏之後會加上跳轉到下一級界面的代碼
-        main_menu()
-    else:
-        click.secho(f"❌ Wrong Password! Try again! ", fg="red")
+            menu_table.add_row("\n[bold cyan]╔═══════════════════════════════════╗[/bold cyan]")
+            menu_table.add_row("[bold cyan]║         💰 個人預算助手           ║[/bold cyan]")
+            menu_table.add_row("[bold cyan]║         Budget Assistant          ║[/bold cyan]")
+            menu_table.add_row("[bold cyan]║                                   ║[/bold cyan]")
+            menu_table.add_row("[bold cyan]║                                   ║[/bold cyan]")
+            menu_table.add_row("[bold cyan]║[/bold cyan][white]              Login                [/white][bold cyan]║[/bold cyan]")
+            menu_table.add_row("[bold cyan]║                                   ║[/bold cyan]")
+            menu_table.add_row("[bold cyan]║[/bold cyan][white]              Register             [/white][bold cyan]║[/bold cyan]")
+            menu_table.add_row("[bold cyan]║                                   ║[/bold cyan]")
+            menu_table.add_row("[bold cyan]║[/bold cyan][white]              Quit                 [/white][bold cyan]║[/bold cyan]")
+            menu_table.add_row("[bold cyan]║                                   ║[/bold cyan]")
+            menu_table.add_row("[bold cyan]╚═══════════════════════════════════╝[/bold cyan]\n")  
+
+            print(menu_table)
+
+            choice = Prompt.ask(
+                    choices=["Login", "Register", "Quit"]
+                )
+
+            if choice == "Login":
+                self.login()
+            elif choice == "Register":
+                self.register()
+            elif choice == "Quit":
+                self.quit()
+                break
     
 
-# create new user
-@cli.command()
-@click.option("--username", prompt = True, help = "用戶名稱")
-@click.option("--password", prompt = True, hide_input=True, help = "密碼")
-@click.option("--confirm", prompt = "Confirm Password", hide_input = True, help = "確認密碼")
-def register(username, password, confirm):
-    """註冊新用戶"""
+        def main_menu(self):
+        """具體功能界面"""
+        time.sleep(3)
+        while self.running:
+            self.console.clear()
 
-    if password != confirm:
-        click.secho("Wrong Password! Try Again!", fg='red')
-        return
-    
-    result = user_create(username,password)
-    # 檢查用戶是否合法，目前尚未有此函數↓
-    if result:
-        click.secho(f"✅ Registration Succeed! Welcome {username}", fg='green')
+            title_panel = Panel.fit(
+                f"[bold cyan]Personal Budget Assistant[/bold cyan]\n"
+                f"[green]Current User: {self.current_user["username"]}[/green]",
+                title="💰 Main Menu",
+                border_style="cyan"
+            )
+            self.console.print(title_panel)
+            self.console.print()
 
-    else:
-        click.secho(f"❌ Registeration Fails! Invalid Username", fg="red")
-        show_username_rule()
+            menu_table = Table(show_header=False, box=None)
+            menu_table.add_column("Option", style="bold yellow", width=8)
+            menu_table.add_column("Description", style="white")
+            
+            menu_table.add_row("1", "And New Budget Plan")
+            menu_table.add_row("2", "View Past Budget Plan")
+            menu_table.add_row("3", "Back to login interface")
+            menu_table.add_row("4", "Quit")
+
+            self.console.print(menu_table)
+
+            time.sleep(1)
+
+            choice = Prompt.ask(
+                "[bold yellow]Please select an option[/bold yellow]",
+                choices=["1", "2", "3", "4"],
+                default="4"
+            )
+
+            if choice == "1":
+                break
+            elif choice == "2":
+                break
+            elif choice == "3":
+                if Confirm.ask("[yellow]Return to login screen?[/yellow]"):
+                    self.console.clear()
+                    return
+            elif choice == "4":
+                    self.quit()
+                    break
+  
+    def main_menu(self):
+        """具體功能界面"""
+        time.sleep(3)
+        while self.running:
+            self.console.clear()
+
+            title_panel = Panel.fit(
+                f"[bold cyan]Personal Budget Assistant[/bold cyan]\n"
+                f"[green]Current User: {self.current_user["username"]}[/green]",
+                title="💰 Main Menu",
+                border_style="cyan"
+            )
+            self.console.print(title_panel)
+            self.console.print()
+
+            menu_table = Table(show_header=False, box=None)
+            menu_table.add_column("Option", style="bold yellow", width=8)
+            menu_table.add_column("Description", style="white")
+            
+            menu_table.add_row("1", "And New Budget Plan")
+            menu_table.add_row("2", "View Past Budget Plan")
+            menu_table.add_row("3", "Back to login interface")
+            menu_table.add_row("4", "Quit")
+
+            self.console.print(menu_table)
+
+            time.sleep(1)
+
+            choice = Prompt.ask(
+                "[bold yellow]Please select an option[/bold yellow]",
+                choices=["1", "2", "3", "4"],
+                default="4"
+            )
+
+            if choice == "1":
+                break
+            elif choice == "2":
+                break
+            elif choice == "3":
+                if Confirm.ask("[yellow]Return to login screen?[/yellow]"):
+                    self.console.clear()
+                    return
+            elif choice == "4":
+                    self.quit()
+                    break
+    # endregion
+
+    # region 方法
+
+    # region 用戶識別方法
+    def login(self):
+        if self.current_user == None:
+            username = click.prompt("Username")
+            password = click.prompt("Password")
+            users = user_load()
+            self.current_user = user_find(users, username)
+            if self.current_user == None:
+                click.secho(f"❌ 用戶 '{username}' 不存在", fg="red")
+                time.sleep(3)
+                return
+            if user_examine(self.current_user, password):
+                show_welcome_panel(username)
+                # opening interface
+                self.main_menu()
+                return
+            else:
+                click.secho(f"❌ Wrong Password! Try again! ", fg="red")
+                time.sleep(3)
+                return
+        else:
+            show_welcome_panel(username)
+            # opening interface
+            self.main_menu()
+            return
     
+    def register(self):
+        """註冊新用戶"""
+
+        username = click.prompt("Username")
+        password = click.prompt("Password")
+        confirm = click.prompt("Confirm")
+        if password != confirm:
+            click.secho("Wrong Password! Try Again!", fg='red')
+            time.sleep(3)
+            return
+        
+        result = user_create(username,password)
+        # 檢查用戶是否合法，目前尚未有此函數↓
+        if result:
+            click.secho(f"✅ Registration Succeed! Welcome {username}", fg='green')
+            time.sleep(3)
+        else:
+            click.secho(f"❌ Registeration Fails! Invalid Username", fg="red")
+            time.sleep(3)
+            show_username_rule()
+    # endregion
+
+    # region 頁面跳轉方法
+    def quit(self):
+        if Confirm.ask("[yellow]Are you sure you want to quit?[/yellow]"):
+            self.console.print("[green]👋 Goodbye! See you next time![/green]\n")
+            time.sleep(1)
+            self.console.clear()
+            self.running = False
+    # endregion
+
+    # endregion
    
 # ==================== 主程序入口 ====================
 
 if __name__ == "__main__":
-    # 開始界面
-    print("\n[bold cyan]╔═══════════════════════════════════╗[/bold cyan]")
-    print("[bold cyan]║         💰 個人預算助手           ║[/bold cyan]")
-    print("[bold cyan]║         Budget Assistant          ║[/bold cyan]")
-    print("[bold cyan]╚═══════════════════════════════════╝[/bold cyan]\n")
-    
-    # 運行 Click CLI
-    cli()
+   
+    app = BudgetAssistant()
+    app.start()
