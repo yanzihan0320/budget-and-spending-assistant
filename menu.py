@@ -4,6 +4,7 @@ import json
 import os
 import click
 import time
+from typing import Optional
 from rich import print
 from rich.panel import Panel
 from rich.console import Console
@@ -125,171 +126,143 @@ def add_budget_plan_menu():
 
 
 
+ 
+class AppState:
+    current_user: Optional[dict] = None      # {"username": "", "user_id": ""}
+    current_plan: Optional[dict] = None      # {"plan_id": "", "name": "", "files": {...}}
+    layer: int = 1                           # 1=登录页 2=主菜单 3=方案详情
+    running: bool = True
+
 
 class BudgetAssistant:
     # region 構造方法（含字段無屬性）
     def __init__(self):
         self.console = Console()
-        self.current_user = None
-        self.running = True
+        self.state = AppState()
     # endregion
     
     # region 各級界面
     def start(self):
         """開始界面"""
         # 開始界面
-        while self.running:
+        while self.state.running:
             self.console.clear()
-            menu_table = Table(show_header=False, box = None)
-            menu_table.add_column(justify="center")
 
-            menu_table.add_row("\n[bold cyan]╔═══════════════════════════════════╗[/bold cyan]")
-            menu_table.add_row("[bold cyan]║         💰 個人預算助手           ║[/bold cyan]")
-            menu_table.add_row("[bold cyan]║         Budget Assistant          ║[/bold cyan]")
-            menu_table.add_row("[bold cyan]║                                   ║[/bold cyan]")
-            menu_table.add_row("[bold cyan]║                                   ║[/bold cyan]")
-            menu_table.add_row("[bold cyan]║[/bold cyan][white]              Login                [/white][bold cyan]║[/bold cyan]")
-            menu_table.add_row("[bold cyan]║                                   ║[/bold cyan]")
-            menu_table.add_row("[bold cyan]║[/bold cyan][white]              Register             [/white][bold cyan]║[/bold cyan]")
-            menu_table.add_row("[bold cyan]║                                   ║[/bold cyan]")
-            menu_table.add_row("[bold cyan]║[/bold cyan][white]              Quit                 [/white][bold cyan]║[/bold cyan]")
-            menu_table.add_row("[bold cyan]║                                   ║[/bold cyan]")
-            menu_table.add_row("[bold cyan]╚═══════════════════════════════════╝[/bold cyan]\n")  
+            if self.state.layer == 1:
+                self.render_layer1()
+            elif self.state.layer == 2:
+                self.render_layer2()
 
-            print(menu_table)
+    def render_layer1(self):
+        """第一层：登录注册界面"""
+        menu_table = Table(show_header=False, box = None)
+        menu_table.add_column(justify="center")
+
+        menu_table.add_row("\n[bold cyan]╔═══════════════════════════════════╗[/bold cyan]")
+        menu_table.add_row("[bold cyan]║         💰 個人預算助手           ║[/bold cyan]")
+        menu_table.add_row("[bold cyan]║         Budget Assistant          ║[/bold cyan]")
+        menu_table.add_row("[bold cyan]║                                   ║[/bold cyan]")
+        menu_table.add_row("[bold cyan]║                                   ║[/bold cyan]")
+        menu_table.add_row("[bold cyan]║[/bold cyan][white]              Login                [/white][bold cyan]║[/bold cyan]")
+        menu_table.add_row("[bold cyan]║                                   ║[/bold cyan]")
+        menu_table.add_row("[bold cyan]║[/bold cyan][white]              Register             [/white][bold cyan]║[/bold cyan]")
+        menu_table.add_row("[bold cyan]║                                   ║[/bold cyan]")
+        menu_table.add_row("[bold cyan]║[/bold cyan][white]              Quit                 [/white][bold cyan]║[/bold cyan]")
+        menu_table.add_row("[bold cyan]║                                   ║[/bold cyan]")
+        menu_table.add_row("[bold cyan]╚═══════════════════════════════════╝[/bold cyan]\n")  
+
+        print(menu_table)
+
+        choice = Prompt.ask(
+            "Please select",
+                choices=["Login", "Register", "Quit"]
+            )
+
+        if choice == "Login":
+            self.login()
+        elif choice == "Register":
+            self.register()
+        elif choice == "Quit":
+            self.quit()
+  
+    def render_layer2(self):
+        """核心功能界面，方案选择"""
+        if not self.state.current_user:
+            return
+        time.sleep(3)
+        while self.state.running:
+            self.console.clear()
+
+            title_panel = Panel.fit(
+                f"[bold cyan]Personal Budget Assistant[/bold cyan]\n"
+                f"[green]Current User: {self.state.current_user['username']}[/green]",
+                title="💰 Main Menu",
+                border_style="cyan"
+            )
+            self.console.print(title_panel)
+            self.console.print()
+
+            menu_table = Table(show_header=False, box=None)
+            menu_table.add_column("Option", style="bold yellow", width=8)
+            menu_table.add_column("Description", style="white")
+            
+            menu_table.add_row("1", "And New Budget Plan")
+            menu_table.add_row("2", "View Past Budget Plan")
+            menu_table.add_row("3", "Back to login interface")
+            menu_table.add_row("4", "Quit")
+
+            self.console.print(menu_table)
+
+            time.sleep(1)
 
             choice = Prompt.ask(
-                    choices=["Login", "Register", "Quit"]
-                )
+                "[bold yellow]Please select an option[/bold yellow]",
+                choices=["1", "2", "3", "4"],
+                default="4"
+            )
 
-            if choice == "Login":
-                self.login()
-            elif choice == "Register":
-                self.register()
-            elif choice == "Quit":
+            if choice == "1":
+                break
+            elif choice == "2":
+                break
+            elif choice == "3":
+                if Confirm.ask("[yellow]Return to login screen?[/yellow]"):
+                    self.console.clear()
+                    return
+            elif choice == "4":
                 self.quit()
                 break
-    
-
-        def main_menu(self):
-        """具體功能界面"""
-        time.sleep(3)
-        while self.running:
-            self.console.clear()
-
-            title_panel = Panel.fit(
-                f"[bold cyan]Personal Budget Assistant[/bold cyan]\n"
-                f"[green]Current User: {self.current_user["username"]}[/green]",
-                title="💰 Main Menu",
-                border_style="cyan"
-            )
-            self.console.print(title_panel)
-            self.console.print()
-
-            menu_table = Table(show_header=False, box=None)
-            menu_table.add_column("Option", style="bold yellow", width=8)
-            menu_table.add_column("Description", style="white")
-            
-            menu_table.add_row("1", "And New Budget Plan")
-            menu_table.add_row("2", "View Past Budget Plan")
-            menu_table.add_row("3", "Back to login interface")
-            menu_table.add_row("4", "Quit")
-
-            self.console.print(menu_table)
-
-            time.sleep(1)
-
-            choice = Prompt.ask(
-                "[bold yellow]Please select an option[/bold yellow]",
-                choices=["1", "2", "3", "4"],
-                default="4"
-            )
-
-            if choice == "1":
-                break
-            elif choice == "2":
-                break
-            elif choice == "3":
-                if Confirm.ask("[yellow]Return to login screen?[/yellow]"):
-                    self.console.clear()
-                    return
-            elif choice == "4":
-                    self.quit()
-                    break
-  
-    def main_menu(self):
-        """具體功能界面"""
-        time.sleep(3)
-        while self.running:
-            self.console.clear()
-
-            title_panel = Panel.fit(
-                f"[bold cyan]Personal Budget Assistant[/bold cyan]\n"
-                f"[green]Current User: {self.current_user["username"]}[/green]",
-                title="💰 Main Menu",
-                border_style="cyan"
-            )
-            self.console.print(title_panel)
-            self.console.print()
-
-            menu_table = Table(show_header=False, box=None)
-            menu_table.add_column("Option", style="bold yellow", width=8)
-            menu_table.add_column("Description", style="white")
-            
-            menu_table.add_row("1", "And New Budget Plan")
-            menu_table.add_row("2", "View Past Budget Plan")
-            menu_table.add_row("3", "Back to login interface")
-            menu_table.add_row("4", "Quit")
-
-            self.console.print(menu_table)
-
-            time.sleep(1)
-
-            choice = Prompt.ask(
-                "[bold yellow]Please select an option[/bold yellow]",
-                choices=["1", "2", "3", "4"],
-                default="4"
-            )
-
-            if choice == "1":
-                break
-            elif choice == "2":
-                break
-            elif choice == "3":
-                if Confirm.ask("[yellow]Return to login screen?[/yellow]"):
-                    self.console.clear()
-                    return
-            elif choice == "4":
-                    self.quit()
-                    break
     # endregion
 
     # region 方法
 
     # region 用戶識別方法
     def login(self):
-        if self.current_user == None:
+        if self.state.current_user == None:
             username = click.prompt("Username")
             password = click.prompt("Password")
             users = user_load()
-            self.current_user = user_find(users, username)
-            if self.current_user == None:
+            self.state.current_user = user_find(users, username)
+            if self.state.current_user == None:
                 click.secho(f"❌ 用戶 '{username}' 不存在", fg="red")
                 time.sleep(3)
                 return
-            if user_examine(self.current_user, password):
+            if user_examine(self.state.current_user, password):
                 show_welcome_panel(username)
                 # opening interface
-                self.main_menu()
+                self.state.layer = 2
                 return
             else:
+                self.state.current_user = None;
                 click.secho(f"❌ Wrong Password! Try again! ", fg="red")
                 time.sleep(3)
                 return
         else:
-            show_welcome_panel(username)
+            click.secho(f"Already login", fg="green")
+            time.sleep(0.5)
+            show_welcome_panel(self.state.current_user["username"])
             # opening interface
-            self.main_menu()
+            self.state.layer = 2
             return
     
     def register(self):
@@ -304,7 +277,7 @@ class BudgetAssistant:
             return
         
         result = user_create(username,password)
-        # 檢查用戶是否合法，目前尚未有此函數↓
+        # 檢查用戶是否合法↓
         if result:
             click.secho(f"✅ Registration Succeed! Welcome {username}", fg='green')
             time.sleep(3)
@@ -320,7 +293,7 @@ class BudgetAssistant:
             self.console.print("[green]👋 Goodbye! See you next time![/green]\n")
             time.sleep(1)
             self.console.clear()
-            self.running = False
+            self.state.running = False
     # endregion
 
     # endregion
