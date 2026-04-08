@@ -1,6 +1,6 @@
 # Budget and Spending Assistant
 
-HKU COMP1110 Project - Group F01
+HKU COMP1110 Project -  Group  F01
 
 ### 1. Problem Statement and Project Scope
 
