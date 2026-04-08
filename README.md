@@ -150,3 +150,4 @@ A predefined category list (for example, Food, Transport, Shopping) is provided,
 | Demo recording and report drafting (Role 6 lead; Role 1 compiles)                                    |           |              |                 |             |              | X            | X               |
 | Finalize unit and integration tests                                                                  |           |              |                 |             |              | X            | X               |
 | Final polishing and submission (GitHub cleanup, final report PDF, individual reports, Moodle upload) |           |              |                 |             |              |              | X               |
+
