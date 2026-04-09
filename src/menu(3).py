@@ -14,12 +14,13 @@ from rich.table import Table
 
 from alert import *
 from data_validator import *
-from io import *
 from models import *
 from stats import *
 from validator import *
 
-
+import sys
+sys.path.insert(0, '.')
+from io import *
 
 
 
