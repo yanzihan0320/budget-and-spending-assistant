@@ -1,6 +1,6 @@
 # Budget and Spending Assistant
 
-HKU COMP1110 Project -  Group  F01
+HKU COMP1110 Project - Group F01
 
 ### 1. Problem Statement and Project Scope
 
@@ -33,10 +33,10 @@ To address this, our project develops a lightweight, text-based Personal Budget 
 
 #### Core Data Structures
 
-| Entity      | Fields                                                                                           |
-| ----------- | ------------------------------------------------------------------------------------------------ |
-| Transaction | date (YYYY-MM-DD), amount (float), category (str), description (str), notes (optional)           |
-| BudgetRule  | category (str), period (daily/weekly/monthly), threshold (float), alert_type (exceed/percentage) |
+| Entity      | Fields                                                                                             |
+| ----------- | -------------------------------------------------------------------------------------------------- |
+| Transaction | date (YYYY-MM-DD), amount (float), category (str), description (str), notes (optional)             |
+| BudgetRule  | category (str), period (day/week/month), threshold (float), alert_type (over_threshold/over_ratio) |
 
 A predefined category list (for example, Food, Transport, Shopping) is provided, with support for user-defined categories via a configuration file.
 
@@ -44,6 +44,7 @@ A predefined category list (for example, Food, Transport, Shopping) is provided,
 
 - Validate date format, amount sign, and category existence.
 - Gracefully handle missing files, malformed rows, and empty inputs with clear error messages.
+- Keep compatibility mapping only inside I/O and validator internals (legacy values map to unified values).
 
 #### Modular Architecture
 
@@ -60,6 +61,14 @@ A predefined category list (for example, Food, Transport, Shopping) is provided,
 - Integration tests using 3-4 predefined case studies.
 - Edge cases (empty files, missing categories, large amounts) to verify robustness.
 
+#### Technical Coordination Emphasis (Updated)
+
+- Unified transaction CSV header order is fixed: date, amount, category, description, notes.
+- Unified budget rule JSON fields are fixed: category, period, threshold, alert_type.
+- Standard initial categories are fixed to 8 items: Catering, Transport, Shopping, Entertainment, Housing, Medical, Education, Others.
+- Legacy mappings (meals/transport/shopping, daily/weekly/monthly, exceed/percentage) must be normalized before business logic.
+- Module interface contracts should remain stable across roles to reduce integration risk.
+
 ### 3. Task Breakdown and Role Assignment
 
 #### Role 1 - Yan Zihan (3036482292), Project Lead
@@ -70,8 +79,9 @@ A predefined category list (for example, Food, Transport, Shopping) is provided,
   2.  Maintain Gantt and risk log.
   3.  Manage GitHub merges.
   4.  Compile final report.
+  5.  Enforce cross-role interface freeze and technical standard compliance checks.
 - Deliverables: kickoff minutes, Gantt, merged PRs, final report draft.
-- Acceptance criteria: all milestones tracked, PRs reviewed within 48h, final report assembled on time.
+- Acceptance criteria: all milestones tracked, PRs reviewed within 48h, final report assembled on time, technical standards aligned.
 
 #### Role 2 - Tang Yinqi (3036645820), Data Model Architect
 
@@ -81,8 +91,9 @@ A predefined category list (for example, Food, Transport, Shopping) is provided,
   2.  Provide sample objects.
   3.  Publish interface document.
   4.  Update on schema changes.
+  5.  Ensure BudgetRule fields use period and threshold as canonical names.
 - Deliverables: schema document, example CSV/JSON headers, interface README.
-- Acceptance criteria: other roles can parse sample files and validation tests pass on schema.
+- Acceptance criteria: other roles can parse sample files, validation tests pass on schema, and canonical field names are preserved.
 
 #### Role 3 - Zheng Weiqi (3036589234), File I/O and Validation
 
@@ -92,8 +103,9 @@ A predefined category list (for example, Food, Transport, Shopping) is provided,
   2.  Implement load/save functions.
   3.  Implement `validate_transaction` and `validate_rule`.
   4.  Provide sample files.
+  5.  Normalize legacy values to unified enums in load functions.
 - Deliverables: `load_transactions`, `save_transactions`, validation module, sample files.
-- Acceptance criteria: functions handle missing/malformed files gracefully and include unit tests for edge cases.
+- Acceptance criteria: functions handle missing/malformed files gracefully, include unit tests for edge cases, and return unified-format dictionaries.
 
 #### Role 4 - Zou Jiachen (3036481016), Text Menu Interface
 
@@ -103,8 +115,9 @@ A predefined category list (for example, Food, Transport, Shopping) is provided,
   2.  Implement add/view flows.
   3.  Hook to I/O and stats modules.
   4.  Provide usage examples.
+  5.  Follow input flow: assemble dict -> validate -> save.
 - Deliverables: CLI script, usage README, example session logs.
-- Acceptance criteria: menu supports add/view/summaries and handles invalid inputs with clear messages.
+- Acceptance criteria: menu supports add/view/summaries, handles invalid inputs with clear messages, and does not break module boundaries.
 
 #### Role 5 - Li Aitong (3036588060), Statistics and Alerts
 
@@ -115,8 +128,9 @@ A predefined category list (for example, Food, Transport, Shopping) is provided,
   3.  Implement trend generator.
   4.  Implement 4 alert rules.
   5.  Write unit tests.
+  6.  Ensure weekly summary uses `isocalendar()` and alert enums use unified names.
 - Deliverables: stats module, `check_budget_alerts`, test cases.
-- Acceptance criteria: outputs match expected values on test datasets and alerts trigger per rules.
+- Acceptance criteria: outputs match expected values on test datasets, alerts trigger per rules, and over_ratio default threshold behavior is validated.
 
 #### Role 6 - Li Ryan Han (3036519344), Case Studies and Testing
 
@@ -126,9 +140,9 @@ A predefined category list (for example, Food, Transport, Shopping) is provided,
   2.  Generate transaction files.
   3.  Run integrated tests.
   4.  Draft demo script and record checklist.
+  5.  Provide both unified-format and legacy-format compatibility test data.
 - Deliverables: case input files, test reports, demo script.
-- Acceptance criteria: case runs reproduce expected summaries/alerts and demo script maps to test data.
-
+- Acceptance criteria: case runs reproduce expected summaries/alerts, demo script maps to test data, and compatibility tests are reproducible.
 
 ### 4. Timeline and Milestones
 
@@ -142,12 +156,14 @@ A predefined category list (for example, Food, Transport, Shopping) is provided,
 | CLI skeleton (Role 4)                                                                                |           |              | X               |             |              |              |                 |
 | Statistics core totals, Top N (Role 5)                                                               |           |              | X               |             |              |              |                 |
 | Validation integrated into I/O (Role 3)                                                              |           |              | X               | X           |              |              |                 |
+| Technical standard lock: unified fields and enums across all modules                                 |           |              |                 | X           | X            |              |                 |
 | Unit tests start (Role 5/3)                                                                          |           |              |                 | X           |              |              |                 |
 | Module integration: CLI + I/O + stats (All)                                                          |           |              |                 | X           | X            |              |                 |
+| Interface contract review checkpoint (Role 1 + Role 2 + Role 3 + Role 4 + Role 5)                    |           |              |                 |             | X            |              |                 |
 | First end-to-end tests + bug log (Role 6)                                                            |           |              |                 |             | X            |              |                 |
 | Case study execution (3-4 scenarios, Role 6)                                                         |           |              |                 |             | X            | X            |                 |
+| Compatibility regression tests (legacy mapping + unified format)                                     |           |              |                 |             |              | X            |                 |
 | Bug fixes and feature polish (All)                                                                   |           |              |                 |             |              | X            |                 |
 | Demo recording and report drafting (Role 6 lead; Role 1 compiles)                                    |           |              |                 |             |              | X            | X               |
 | Finalize unit and integration tests                                                                  |           |              |                 |             |              | X            | X               |
 | Final polishing and submission (GitHub cleanup, final report PDF, individual reports, Moodle upload) |           |              |                 |             |              |              | X               |
-
