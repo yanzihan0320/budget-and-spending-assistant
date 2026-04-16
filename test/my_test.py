@@ -1,18 +1,23 @@
-# 从io.py导入文件加载函数（Role3写的）
-from io import load_transactions, load_budget_rules
+from pathlib import Path
+import sys
 
-# 加载data文件夹里的两个文件（路径要写对！）
-trans = load_transactions("../data/transactions.csv")
-rules = load_budget_rules("../data/budget_rules.json")
+ROOT_DIR = Path(__file__).resolve().parents[1]
+if str(ROOT_DIR) not in sys.path:
+    sys.path.insert(0, str(ROOT_DIR))
 
-# 打印加载结果，看是否成功
-print(f"✅ 成功加载 {len(trans)} 条交易记录")
-print(f"✅ 成功加载 {len(rules)} 条预算规则")
+from src.io import load_budget_rules, load_transactions
 
-# 打印交易和规则预览，验证数据正确
-print("\n📋 交易记录：")
-for t in trans:
-    print(t)
-print("\n📋 预算规则：")
-for r in rules:
-    print(r)
+
+transactions = load_transactions()
+rules = load_budget_rules()
+
+print(f"Loaded {len(transactions)} transactions successfully.")
+print(f"Loaded {len(rules)} budget rules successfully.")
+
+print("\nTransaction preview:")
+for item in transactions:
+    print(item)
+
+print("\nBudget rule preview:")
+for item in rules:
+    print(item)

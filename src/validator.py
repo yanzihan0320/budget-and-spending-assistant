@@ -1,91 +1,73 @@
+from __future__ import annotations
+
 from datetime import datetime
-from typing import tuple
 
-# Standard category list (FROM TEAM STANDARD, NO CHANGE)
-CATEGORY_LIST = [
-    "Catering", "Transport", "Shopping", "Entertainment",
-    "Housing", "Medical", "Education", "Others"
-]
+from .models import (
+    CategoryManager,
+    VALID_ALERT_TYPES,
+    VALID_PERIODS,
+    normalize_alert_type,
+    normalize_category,
+    normalize_period,
+)
 
-# Old format → Standard format mapping
-CATEGORY_MAP = {
-    "meals": "Catering",
-    "transport": "Transport",
-    "shopping": "Shopping"
-}
 
-PERIOD_MAP = {
-    "daily": "day",
-    "weekly": "week",
-    "monthly": "month"
-}
+def validate_date(date_str: str) -> tuple[bool, str]:
+    if not date_str:
+        return False, "Date cannot be empty."
 
-ALERT_TYPE_MAP = {
-    "exceed": "over_threshold",
-    "percentage": "over_ratio"
-}
+    try:
+        datetime.strptime(date_str, "%Y-%m-%d")
+        return True, "Validation passed"
+    except ValueError:
+        return False, "Invalid date format. Expected YYYY-MM-DD."
+
 
 def validate_transaction(transaction: dict) -> tuple[bool, str]:
-    data = transaction.copy()
+    valid, message = validate_date(str(transaction.get("date", "")).strip())
+    if not valid:
+        return False, message
 
-    # Date check
-    date = data.get("date", "")
-    if not date:
-        return False, "Date cannot be empty"
-    try:
-        datetime.strptime(date, "%Y-%-%d")
-    except ValueError:
-        return False, "Invalid date format, must be YYYY-MM-DD"
-
-    # Amount check
-    amount = data.get("amount", 0)
+    amount = transaction.get("amount", 0)
     if not isinstance(amount, (int, float)):
-        return False, "Amount must be a number"
-    if amount <= 0:
-        return False, "Amount must be greater than 0"
+        return False, "Amount must be numeric."
+    if float(amount) <= 0:
+        return False, "Amount must be greater than 0."
 
-    # Category check
-    category = data.get("category", "")
-    cat_std = CATEGORY_MAP.get(category, category)
-    if cat_std not in CATEGORY_LIST:
-        return False, f"Category [{category}] is invalid"
+    category = normalize_category(str(transaction.get("category", "")).strip())
+    if not CategoryManager.is_valid_category(category):
+        return False, f"Invalid category: {category}."
 
-    # Description check
-    desc = data.get("description", "").strip()
-    if not desc:
-        return False, "Description cannot be empty"
+    description = str(transaction.get("description", "")).strip()
+    if not description:
+        return False, "Description cannot be empty."
 
     return True, "Validation passed"
+
 
 def validate_budget_rule(rule: dict) -> tuple[bool, str]:
-    data = rule.copy()
+    category = normalize_category(str(rule.get("category", "")).strip())
+    if not CategoryManager.is_valid_category(category):
+        return False, f"Invalid category: {category}."
 
-    period = data.get("period", data.get("time_period", ""))
-    threshold = data.get("threshold", data.get("threshold_value", 0))
-    alert_type = data.get("alert_type", "")
-    category = data.get("category", "")
+    period = normalize_period(str(rule.get("period", rule.get("time_period", "")).strip()))
+    if period not in VALID_PERIODS:
+        return False, "Period must be one of: day, week, month."
 
-    # Threshold
+    threshold = rule.get("threshold", rule.get("threshold_value", 0))
     if not isinstance(threshold, (int, float)):
-        return False, "Threshold must be a number"
-    if threshold <= 0:
-        return False, "Threshold must be greater than 0"
+        return False, "Threshold must be numeric."
+    if float(threshold) <= 0:
+        return False, "Threshold must be greater than 0."
 
-    # Period
-    period_std = PERIOD_MAP.get(period, period)
-    if period_std not in ["day", "week", "month"]:
-        return False, "Period must be day/week/month"
-
-    # Alert type
-    alert_std = ALERT_TYPE_MAP.get(alert_type, alert_type)
-    if alert_std not in ["over_threshold", "over_ratio"]:
-        return False, "Alert type must be over_threshold/over_ratio"
-
-    # Category
-    cat_std = CATEGORY_MAP.get(category, category)
-    if cat_std not in CATEGORY_LIST:
-        return False, f"Category [{category}] is invalid"
+    alert_type = normalize_alert_type(str(rule.get("alert_type", "")).strip())
+    if alert_type not in VALID_ALERT_TYPES:
+        return False, "Alert type must be over_threshold or over_ratio."
 
     return True, "Validation passed"
+
+
+def validate_rule(rule: dict) -> tuple[bool, str]:
+    return validate_budget_rule(rule)
 
 
