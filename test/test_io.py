@@ -1,8 +1,16 @@
-from file_io import load_transactions, load_budget_rules
+from pathlib import Path
+import sys
 
-trans = load_transactions("transactions.csv")
-rules = load_budget_rules("budget_rules.json")
+ROOT_DIR = Path(__file__).resolve().parents[1]
+if str(ROOT_DIR) not in sys.path:
+    sys.path.insert(0, str(ROOT_DIR))
 
-print(f"✅ 成功加载 {len(trans)} 条交易记录")
-print(f"✅ 成功加载 {len(rules)} 条预算规则")
-print("项目文件夹设置完成！可以开始写代码啦～")
+from src.io import load_budget_rules, load_transactions
+
+
+transactions = load_transactions()
+rules = load_budget_rules()
+
+print(f"Loaded {len(transactions)} transactions successfully.")
+print(f"Loaded {len(rules)} budget rules successfully.")
+print("Project setup check completed.")

@@ -55,6 +55,23 @@ A predefined category list (for example, Food, Transport, Shopping) is provided,
 - `menu.py`: text interface.
 - `test_data_generator.py`: random test data.
 
+#### Quick Start
+
+1. Install Python 3.9+.
+2. This version uses only Python standard library (no third-party package required).
+3. Run the CLI application:
+
+- `python -m src.menu`
+
+4. Run I/O smoke tests:
+
+- `python test/test_io.py`
+- `python test/my_test.py`
+
+5. Generate random test transactions:
+
+- `python -m src.test_data_generator`
+
 #### Testing Strategy
 
 - Unit tests for core functions (validation, statistics, alerts).
