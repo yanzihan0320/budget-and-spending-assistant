@@ -1,0 +1,9 @@
+[
+  {
+    "category": "transport",
+    "period": "monthly",
+    "threshold": 100.0,
+    "alert_type": "exceed",
+    "start_date": "2026-03-01"
+  }
+]

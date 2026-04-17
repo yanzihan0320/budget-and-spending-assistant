@@ -54,6 +54,7 @@ A predefined category list (for example, Food, Transport, Shopping) is provided,
 - `alert.py`: rule-based alerts.
 - `menu.py`: text interface.
 - `test_data_generator.py`: random test data.
+- `case_runner.py`: reproducible case-study runner.
 
 #### Quick Start
 
@@ -63,19 +64,59 @@ A predefined category list (for example, Food, Transport, Shopping) is provided,
 
 - `python -m src.menu`
 
-4. Run I/O smoke tests:
+4. Run automated tests:
 
-- `python test/test_io.py`
-- `python test/my_test.py`
+- `python -m unittest discover -s test -p "test_*.py"`
 
 5. Generate random test transactions:
 
 - `python -m src.test_data_generator`
 
+6. Reproduce one case study:
+
+- `python -m src.case_runner 1`
+
+#### Design Trade-Offs (Explicit)
+
+1. Manual entry vs bank synchronization:
+
+- Chosen: manual entry. Reason: no external API dependency and easier implementation/testing.
+
+2. Fixed baseline categories vs unrestricted free-form categories:
+
+- Chosen: fixed baseline with optional extension. Reason: improves validation quality and summary consistency.
+
+3. CSV/JSON files vs database backend:
+
+- Chosen: CSV/JSON. Reason: transparent for teaching context and simple for inspection/debugging.
+
+4. Rule-based thresholds vs predictive forecasting:
+
+- Chosen: threshold and ratio rules. Reason: deterministic behavior and explainable results for case studies.
+
+5. Legacy value compatibility vs strict canonical schema only:
+
+- Chosen: compatibility mapping (`meals`, `daily`, `exceed`, etc.) into canonical values. Reason: robust against mixed datasets.
+
+6. Dynamic "today" anchor vs deterministic data-driven anchor:
+
+- Chosen: deterministic anchor (`start_date` from rule, otherwise earliest transaction date). Reason: reproducible alerts across runs.
+
+#### Case Study Evidence Chain
+
+All four case studies include scenario, input files, expected outputs, limitations, and comparison notes:
+
+1. `case_studies/case_1_daily_food_cap.md`
+2. `case_studies/case_2_monthly_transport_tracking.md`
+3. `case_studies/case_3_subscription_creep.md`
+4. `case_studies/case_4_one_off_purchase_spike.md`
+
+Input datasets are stored in `data/case_studies/` and validated by `test/test_case_studies.py`.
+
 #### Testing Strategy
 
 - Unit tests for core functions (validation, statistics, alerts).
-- Integration tests using 3-4 predefined case studies.
+- Integration tests use four predefined case studies with assertion-based expected outputs.
 - Edge cases (empty files, missing categories, large amounts) to verify robustness.
 
 #### Technical Coordination Emphasis (Updated)

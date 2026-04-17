@@ -1,0 +1,9 @@
+[
+  {
+    "category": "Entertainment",
+    "period": "monthly",
+    "threshold": 150.0,
+    "alert_type": "percentage",
+    "start_date": "2026-03-01"
+  }
+]
