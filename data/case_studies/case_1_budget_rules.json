@@ -1,0 +1,9 @@
+[
+  {
+    "category": "meals",
+    "period": "daily",
+    "threshold": 50.0,
+    "alert_type": "exceed",
+    "start_date": "2026-03-01"
+  }
+]

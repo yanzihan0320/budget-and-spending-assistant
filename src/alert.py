@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import date
+from datetime import date, datetime
 
 from .models import budget_rule_from_dict, normalize_category
 from .stats import filter_by_category, get_period_summary
@@ -23,7 +23,10 @@ def check_budget_alerts(transactions: list[dict], rules: list[dict], start_date:
         if not category_transactions:
             continue
 
-        anchor_date = str(raw_rule.get("start_date", "")).strip() or start_date or date.today().isoformat()
+        anchor_date = _resolve_anchor_date(raw_rule, start_date, category_transactions)
+        if not anchor_date:
+            continue
+
         period_summary = get_period_summary(category_transactions, rule.period, anchor_date)
         total_spending = float(period_summary["total_spending"])
 
@@ -42,5 +45,36 @@ def check_budget_alerts(transactions: list[dict], rules: list[dict], start_date:
                 )
 
     return alerts
+
+
+def _parse_date(date_text: str) -> date | None:
+    try:
+        return datetime.strptime(date_text, "%Y-%m-%d").date()
+    except ValueError:
+        return None
+
+
+def _resolve_anchor_date(raw_rule: dict, explicit_start_date: str | None, category_transactions: list[dict]) -> str | None:
+    # Priority order: rule start_date -> caller-provided start_date -> earliest date in this category.
+    candidates = [
+        str(raw_rule.get("start_date", "")).strip(),
+        str(explicit_start_date or "").strip(),
+    ]
+
+    for candidate in candidates:
+        parsed = _parse_date(candidate)
+        if parsed is not None:
+            return parsed.isoformat()
+
+    transaction_dates = []
+    for row in category_transactions:
+        parsed = _parse_date(str(row.get("date", "")).strip())
+        if parsed is not None:
+            transaction_dates.append(parsed)
+
+    if not transaction_dates:
+        return None
+
+    return min(transaction_dates).isoformat()
 
 
