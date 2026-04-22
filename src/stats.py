@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import date, datetime, timedelta
 
 from .models import normalize_category, normalize_period
 
@@ -68,6 +68,81 @@ def get_top_categories(transactions: list[dict], top_n: int = 3) -> list[tuple[s
     return sorted(summary.items(), key=lambda item: item[1], reverse=True)[:top_n]
 
 
+def get_total_spending(transactions: list[dict]) -> float:
+    total = 0.0
+    for row in transactions:
+        amount = row.get("amount", 0.0)
+        if isinstance(amount, (int, float)) and float(amount) > 0:
+            total += float(amount)
+    return round(total, 2)
+
+
+def get_category_summary_by_period(transactions: list[dict], period: str) -> dict[str, dict[str, float]]:
+    normalized_period = normalize_period(period)
+    if normalized_period not in {"day", "week", "month"}:
+        return {}
+
+    summary: dict[str, dict[str, float]] = {}
+    for row in transactions:
+        amount = row.get("amount", 0.0)
+        if not isinstance(amount, (int, float)) or float(amount) <= 0:
+            continue
+
+        row_date = _parse_date_text(str(row.get("date", "")).strip())
+        if row_date is None:
+            continue
+
+        period_key = _build_period_key(row_date, normalized_period)
+        category = normalize_category(str(row.get("category", "")).strip())
+        if period_key not in summary:
+            summary[period_key] = {}
+
+        summary[period_key][category] = round(summary[period_key].get(category, 0.0) + float(amount), 2)
+
+    return summary
+
+
+def get_recent_spending_trend(
+    transactions: list[dict],
+    window_days: int,
+    end_date: str | None = None,
+) -> dict[str, float]:
+    if window_days <= 0:
+        return {}
+
+    parsed_rows: list[tuple[date, float]] = []
+    for row in transactions:
+        amount = row.get("amount", 0.0)
+        if not isinstance(amount, (int, float)) or float(amount) <= 0:
+            continue
+
+        row_date = _parse_date_text(str(row.get("date", "")).strip())
+        if row_date is None:
+            continue
+
+        parsed_rows.append((row_date, float(amount)))
+
+    if not parsed_rows:
+        return {}
+
+    anchor_date = _parse_date_text(end_date) if end_date else None
+    if anchor_date is None:
+        anchor_date = max(item[0] for item in parsed_rows)
+
+    start_date = anchor_date - timedelta(days=window_days - 1)
+    trend: dict[str, float] = {}
+    for index in range(window_days):
+        day = start_date + timedelta(days=index)
+        trend[day.isoformat()] = 0.0
+
+    for row_date, amount in parsed_rows:
+        if start_date <= row_date <= anchor_date:
+            date_key = row_date.isoformat()
+            trend[date_key] = round(trend.get(date_key, 0.0) + amount, 2)
+
+    return trend
+
+
 def get_monthly_trend(transactions: list[dict]) -> dict[str, float]:
     trend: dict[str, float] = {}
     for row in transactions:
@@ -118,3 +193,21 @@ def _group_by_period(transactions: list[dict], period: str) -> dict[str, float]:
 
         summary[key] = round(summary.get(key, 0.0) + float(amount), 2)
     return summary
+
+
+def _parse_date_text(date_text: str | None) -> date | None:
+    if not date_text:
+        return None
+    try:
+        return datetime.strptime(date_text, "%Y-%m-%d").date()
+    except ValueError:
+        return None
+
+
+def _build_period_key(target_date: date, period: str) -> str:
+    if period == "day":
+        return target_date.isoformat()
+    if period == "week":
+        year, week, _ = target_date.isocalendar()
+        return f"{year}-W{week:02d}"
+    return f"{target_date.year}-{target_date.month:02d}"

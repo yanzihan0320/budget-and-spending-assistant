@@ -14,7 +14,7 @@ To address this, our project develops a lightweight, text-based Personal Budget 
 
 1. Design a clear data model for transactions (date, amount, category, description) and budget rules.
 2. Implement file I/O using CSV and JSON to store and load data.
-3. Provide a text menu interface for adding and viewing transactions, generating summaries, and configuring budgets.
+3. Provide a text menu interface for adding/viewing/filtering transactions, generating summaries, configuring budgets, and reloading data.
 4. Compute summary statistics (totals by category/period, top categories, simple trends).
 5. Implement 4-5 rule-based alerts (for example, daily category caps and percentage thresholds).
 6. Include a test data generator and create 3-4 realistic case studies to demonstrate and evaluate the system.
@@ -38,12 +38,12 @@ To address this, our project develops a lightweight, text-based Personal Budget 
 | Transaction | date (YYYY-MM-DD), amount (float), category (str), description (str), notes (optional)             |
 | BudgetRule  | category (str), period (day/week/month), threshold (float), alert_type (over_threshold/over_ratio) |
 
-A predefined category list (for example, Food, Transport, Shopping) is provided, with support for user-defined categories via a configuration file.
+A predefined category list is provided (Catering, Transport, Shopping, Entertainment, Housing, Medical, Education, Others), with custom categories loaded from `data/category_config.json`.
 
 #### Input Validation and Error Handling
 
-- Validate date format, amount sign, and category existence.
-- Gracefully handle missing files, malformed rows, and empty inputs with clear error messages.
+- Validate date format, amount sign, and category existence with immediate re-prompts during input.
+- Gracefully handle missing files, malformed headers/rows, malformed JSON, and empty inputs with clear error messages.
 - Keep compatibility mapping only inside I/O and validator internals (legacy values map to unified values).
 
 #### Modular Architecture
@@ -52,29 +52,41 @@ A predefined category list (for example, Food, Transport, Shopping) is provided,
 - `io.py`: file read/write and validation.
 - `stats.py`: summaries and trends.
 - `alert.py`: rule-based alerts.
-- `menu.py`: text interface.
-- `test_data_generator.py`: random test data.
+- `menu.py`: text interface (including transaction filtering, data reload, and auto-alert display in report views).
+- `test_data_generator.py`: realistic and edge-case test data generation.
 - `case_runner.py`: reproducible case-study runner.
 
 #### Quick Start
 
 1. Install Python 3.9+.
-2. This version uses only Python standard library (no third-party package required).
-3. Run the CLI application:
+2. Use one virtual environment (`.venv`) for this project.
+
+- Create (first time): `python -m venv .venv`
+- Activate in PowerShell: `.\.venv\Scripts\Activate.ps1`
+
+3. This version uses only Python standard library (no third-party package required).
+4. Run the CLI application:
 
 - `python -m src.menu`
 
-4. Run automated tests:
+5. Run automated tests:
 
 - `python -m unittest discover -s test -p "test_*.py"`
 
-5. Generate random test transactions:
+6. Generate random test transactions:
 
 - `python -m src.test_data_generator`
 
-6. Reproduce one case study:
+7. Reproduce one case study:
 
 - `python -m src.case_runner 1`
+
+Current menu highlights:
+
+- View/filter transactions (all, by category, by date range).
+- Reload transactions and budget rules from files.
+- Immediate budget alert check after adding a transaction.
+- Consecutive overspend threshold can be configured per daily threshold rule.
 
 #### Design Trade-Offs (Explicit)
 
