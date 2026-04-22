@@ -64,6 +64,24 @@ def validate_budget_rule(rule: dict) -> tuple[bool, str]:
     if alert_type not in VALID_ALERT_TYPES:
         return False, "Alert type must be over_threshold or over_ratio."
 
+    ratio_threshold = rule.get("ratio_threshold")
+    if ratio_threshold not in (None, ""):
+        if isinstance(ratio_threshold, bool) or not isinstance(ratio_threshold, (int, float)):
+            return False, "ratio_threshold must be numeric."
+
+        ratio_value = float(ratio_threshold)
+        if ratio_value <= 0 or ratio_value > 1:
+            return False, "ratio_threshold must be greater than 0 and less than or equal to 1."
+
+    consecutive_days_threshold = rule.get("consecutive_days_threshold")
+    if consecutive_days_threshold not in (None, ""):
+        if isinstance(consecutive_days_threshold, bool) or not isinstance(consecutive_days_threshold, (int, float)):
+            return False, "consecutive_days_threshold must be numeric."
+
+        threshold_value = float(consecutive_days_threshold)
+        if threshold_value <= 0 or not threshold_value.is_integer():
+            return False, "consecutive_days_threshold must be a positive integer."
+
     return True, "Validation passed"
 
 
