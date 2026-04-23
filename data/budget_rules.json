@@ -1,5 +1,27 @@
 [
-    {"category": "meals", "period": "daily", "threshold": 50.0, "alert_type": "exceed"},
-    {"category": "transport", "period": "weekly", "threshold": 150.0, "alert_type": "exceed"},
-    {"category": "shopping", "period": "monthly", "threshold": 300.0, "alert_type": "percentage"}
+  {
+    "category": "Catering",
+    "period": "day",
+    "threshold": 50.0,
+    "alert_type": "over_threshold"
+  },
+  {
+    "category": "Transport",
+    "period": "week",
+    "threshold": 150.0,
+    "alert_type": "over_threshold"
+  },
+  {
+    "category": "Shopping",
+    "period": "month",
+    "threshold": 300.0,
+    "alert_type": "over_ratio"
+  },
+  {
+    "category": "Travel",
+    "period": "day",
+    "threshold": 50.0,
+    "alert_type": "over_threshold",
+    "consecutive_days_threshold": 2
+  }
 ]

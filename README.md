@@ -71,7 +71,7 @@ A predefined category list is provided (Catering, Transport, Shopping, Entertain
 
 5. Run automated tests:
 
-- `python -m unittest discover -s test -p "test_*.py"`
+- `python -m unittest discover -s test -p "*.py"`
 
 6. Generate random test transactions:
 

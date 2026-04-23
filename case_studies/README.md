@@ -18,6 +18,6 @@ This folder contains four reproducible case studies. Each case includes:
 
 From project root, each case can be validated by unit/integration tests:
 
-- `python -m unittest discover -s test -p "test_*.py"`
+- `python -m unittest discover -s test -p "*.py"`
 
 The tests in `test/test_case_studies.py` assert the expected summaries and alerts for all four cases.
