@@ -147,11 +147,12 @@ Input datasets are stored in `data/case_studies/` and validated by `test/test_ca
 - Key tasks (ordered):
   1.  Run kickoff meeting.
   2.  Maintain Gantt and risk log.
-  3.  Manage GitHub merges.
-  4.  Compile final report.
+  3.  Managed GitHub PR reviews, conflict resolution, and branch health.
+  4.  Oversaw integration testing and resolved development bottlenecks.
   5.  Enforce cross-role interface freeze and technical standard compliance checks.
-- Deliverables: kickoff minutes, Gantt, merged PRs, final report draft.
-- Acceptance criteria: all milestones tracked, PRs reviewed within 48h, final report assembled on time, technical standards aligned.
+  6.  Defined scope, milestones and conducted team syncs 
+- Deliverables: kickoff minutes, Gantt, merged PRs.
+- Acceptance criteria: all milestones tracked, PRs reviewed within 48h, technical standards aligned.
 
 #### Role 2 - Tang Yinqi (3036645820), Data Model Architect
 
@@ -197,10 +198,10 @@ Input datasets are stored in `data/case_studies/` and validated by `test/test_ca
   2.  Implement Top N categories.
   3.  Implement trend generator.
   4.  Implement 4 alert rules.
-  5.  Write unit tests.
+  5.  Compile final report.
   6.  Ensure weekly summary uses `isocalendar()` and alert enums use unified names.
-- Deliverables: stats module, `check_budget_alerts`, test cases.
-- Acceptance criteria: outputs match expected values on test datasets, alerts trigger per rules, and over_ratio default threshold behavior is validated.
+- Deliverables: stats module, `check_budget_alerts`, final report draft.
+- Acceptance criteria: outputs match expected values on test datasets, alerts trigger per rules, and over_ratio default threshold behavior is validated, final report assembled on time.
 
 #### Role 6 - Li Ryan Han (3036519344), Case Studies and Testing
 
